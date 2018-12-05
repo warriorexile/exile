@@ -1,0 +1,208 @@
+/**
+ * CDAH-Mod-Pack
+ * 
+ * Author: Lotzo, Rashmandash, Yesyesjo
+ *
+ * This work is licensed under a Creative Commons Attribution-NonCommercial 4.0 International License.
+ *
+ * www.cdah-gaming.com
+ */
+
+//////////// 
+FOR CLIENTS:
+////////////
+
+Place the Mod in your Arma 3 folder.
+
+
+///////////////// 
+FOR SERVEROWNERS:
+/////////////////
+
+/////////////////////////////////////////////////////////////
+//////////////////////////Changelog//////////////////////////
+/////////////////////////////////////////////////////////////
+
+
+	//////////////////////////Ver. 1.1//////////////////////////
+
+		Bugfixe:
+		- craftbox exploit removed
+		- removed bike recipe, causing a database issue
+
+
+	//////////////////////////Ver. 1.2////////////////////////// 
+
+		new Item: 
+		- Rearmbox 
+		(added Vehicle Rearm, instructions in the "howtoinstall.txt") 
+
+		new Recipes:
+		- added new advanced crafting recipes
+
+		Changed:
+		- Ammo Container
+		- Refuel Container
+		- Repair Container 
+		changed to cunstructions instead of containers
+
+		Bugfix:
+		Texture failure of
+		- Ammo Mold
+		- Piston
+		- Crankshaft
+
+	//////////////////////////Ver. 1.3//////////////////////////
+	
+		Bugfix:
+		- Anvil now movable and with physic
+		- fixed major exploits
+		
+		New:		
+		- Added "config.sqf" in "\CDAH_crafting\logic" (mpmission)(take a look to UPDATE)			
+		- Added crafttimerscript, controllable in the config
+		- Added craftsound, controllable in the config
+		- Added craftprograssbar
+		
+		Changed:
+		- moved the Rearmscript to the mod-code (take a look to UPDATE)
+		
+		
+		
+	////////////////////////////////////////////////////////////////////////////////////
+	//////////////////////////UPDATE Ver. 1.2 to Ver. 1.3//////////////////////////
+	////////////////////////////////////////////////////////////////////////////////////
+	
+	
+	> ADD the "config.sqf" to your "logic"-folder in the mpmission/ it's not necessary to remove your old files!
+	
+	> ADD "fn_CDAH_setCraftTime.sqf" to your "logic"-folder / if you have different vehiclecategories adjust here and in the config!
+	
+	> ADD to your "init.sqf" in the mpmission this: 
+			
+				[] execVM "CDAH_crafting\logic\config.sqf";
+				
+	> REMOVE from your "init.sqf" this
+	
+		private ['_code', '_function', '_file'];
+
+		{
+			_code = '';
+			_function = _x select 0;
+			_file = _x select 1;
+
+			if (isText (missionConfigFile >> 'CfgExileCustomCode' >> _function)) then
+			{
+				_file = getText (missionConfigFile >> 'CfgExileCustomCode' >> _function);
+			};
+
+			_code = compileFinal (preprocessFileLineNumbers _file);                    
+
+			missionNamespace setVariable [_function, _code];
+		}
+		forEach 
+		[
+			['CDAH_ExileClient_action_rearmVehicle_completed', 'CDAH_crafting\logic\CDAH_ExileClient_action_rearmVehicle_completed.sqf'],
+			['CDAH_ExileClient_action_rearmVehicle_condition', 'CDAH_crafting\logic\CDAH_ExileClient_action_rearmVehicle_condition.sqf']
+		];
+	
+	> ADD the new Bikey to your "keys"-folder and delete the old one
+	
+			THAT's ALL. Have Fun.
+	
+	//////////////////////////////////////////////////////////////////////
+	//////////////////////////First Installation//////////////////////////
+	//////////////////////////////////////////////////////////////////////
+	
+	If u want to add the vehiclecrafting to your server, you have to go to your "mpmissions"-folder and do the following steps:
+	
+	>copy the "CDAH_crafting"-folder to your "mpmissions"-folder
+	
+	> ADD to your "init.sqf" in the mpmission this: 
+			
+				[] execVM "CDAH_crafting\logic\config.sqf";
+	
+	//////////////////////////descrition.ext//////////////////////////
+	
+	>open your descrition.ext and ADD IN "class CfgRemoteExec" the CDAH CODE after the EXILE ORIGINAL Code (you need BOTH !!!): 
+			
+			//EXILE ORIGINAL
+			class ExileServer_system_network_dispatchIncomingMessage { allowedTargets = 2; };
+			
+			
+			//CDAH CODE
+			class CDAH_fnc_CDAH_Workshop_Gui 							 { allowedTargets=0; };
+			class ExileClient_system_network_dispatchIncomingMessage 	 { allowedTargets=1; };
+		
+	//////////////////////////config.cpp//////////////////////////	
+		
+	>open your config.cpp:
+	
+		-ADD IN "class CfgExileCustomCode" this:
+				
+				// CDAH CRAFTING Overwrite
+				ExileClient_object_item_craft =							"CDAH_crafting\logic\CDAH_ExileClient_object_item_craft.sqf"; 
+				ExileClient_gui_crafting_show =							"CDAH_crafting\logic\CDAH_ExileClient_gui_crafting_show.sqf";
+				ExileServer_object_vehicle_carefulCreateVehicle =		"CDAH_crafting\logic\CDAH_ExileServer_object_vehicle_carefulCreateVehicle.sqf";
+				
+				// CDAH Rearm Vehicles (for Vehicle rearming)
+				ExileClient_action_execute =                            "CDAH_crafting\logic\CDAH_ExileClient_action_execute.sqf";
+				
+		-ADD IN "class CfgInteractionModels" this:
+		
+				// CDAH CRAFTING InteractionModles
+				#include "CDAH_crafting\logic\CDAH_interactionModels.hpp"
+		
+		-ADD IN "class CfgInteractionMenus" this:
+				
+				// CDAH CRAFTING InteractionMenus
+				#include "CDAH_crafting\logic\CDAH_Class_tank.hpp"
+													
+		-ADD ABOVE "class CfgCraftingRecipes" this: 			
+				
+				// CDAH CRAFTING Vehicle
+				#include "CDAH_crafting\vehicleRecipes\CDAH_Vehicle_recipies_config.hpp"
+		
+		-ADD TO "class CfgCraftingRecipes" this :
+
+				// CDAH CRAFTING Device
+				#include "CDAH_crafting\deviceRecipes\CDAH_Device_recipies.hpp"
+					
+		-for expandedcrafting ADD TO "class CfgCraftingRecipes" this :
+				
+				(Work in progress)
+				
+				//CDAH CRAFTING Expandedcrafting
+				#include "CDAH_crafting\expandedCraftingRecipes\CDAH_ExpandedCrafting_config.hpp"
+
+		-for vehicle rearming ADD TO the top of your config:
+				
+				//CDAH RearmStuff
+				#include "CDAH_crafting\logic\CDAH_CfgExileDelayedActions.hpp"
+		
+		-also ADD TO all "class vehicle" this:
+				
+				//CDAH Rearm
+				class Rearm: ExileAbstractAction
+				{
+					title = "Rearm";
+					condition = "!(magazinesAllTurrets _this isEqualto [])"; //condition = "!(_this magazinesAllTurrets isEqualto [])";
+					action = "['RearmVehicle', _this select 0] call ExileClient_action_execute";
+				};
+		
+							
+After all place the "CDAH_Mod_Pack.bikey" in your "keys"-folder.
+
+To use all premade recipes you have to add this items to your loot_table or your traders:
+
+CDAH Items:
+
+"CDAH_Ammo_Mold_item", "CDAH_engine_item", "CDAH_crank_shaft_item", "CDAH_car_glass_item", "CDAH_TruckBattery_item", 
+"CDAH_CarBattery_item", "CDAH_Gun_Powder_item", "CDAH_Scrap_metal_item", "CDAH_car_seat_item", "CDAH_piston_item", 
+"CDAH_exhaust_item", "CDAH_rotor_blade_item", "CDAH_carlamp_item", "CDAH_Cartridges_item", "CDAH_Projectiles_item"
+
+Exile Items:
+
+"Exile_Item_Pliers", "Exile_Item_Grinder", "Exile_Item_Foolbox", "Exile_Item_CordlessScrewdriver", "Exile_Item_Hammer",
+"Exile_Item_OilCanister", "Exile_Item_Screwdriver",	"Exile_Item_Wrench", "Exile_Item_MetalScrews", "Exile_Item_Laptop",
+"Exile_Item_MetalWire", "Exile_Item_Carwheel", "Exile_Item_CookingPot", "Exile_Item_Cement", "Exile_Item_ExtensionCord"
